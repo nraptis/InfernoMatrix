@@ -6,9 +6,11 @@
 //
 
 #include "M88.hpp"
-
+#include "M88QuadSelectsA.hpp"
+#include "M88QuadSelectsB.hpp"
+#include "M88QuadSelectsC.hpp"
+#include "M88QuadSelectsD.hpp"
 #include <cstdio>
-#include <cstring>
 
 M88::M88() {
     Reset();
@@ -766,34 +768,268 @@ void M88::SlickshotFullB(std::uint8_t pByte) {
         &M88::Full_TorranceA_EachQuad_4x4, &M88::Full_TorranceB_EachQuad_4x4, &M88::Full_TorranceC_EachQuad_4x4, &M88::Full_TorranceD_EachQuad_4x4,
         &M88::Full_HawthorneA_EachQuad_4x4, &M88::Full_HawthorneB_EachQuad_4x4, &M88::Full_HawthorneC_EachQuad_4x4, &M88::Full_HawthorneD_EachQuad_4x4,
         &M88::Full_WizardA_EachQuad_4x4, &M88::Full_WizardB_EachQuad_4x4, &M88::Full_WizardC_EachQuad_4x4, &M88::Full_WizardD_EachQuad_4x4,
-        
-        &M88::Full_MapleA_4x4,
-        &M88::Full_MapleB_4x4,
-        &M88::Full_MapleC_4x4,
-        &M88::Full_MapleD_4x4,
-        
-        &M88::Full_WillowA_4x4,
-        &M88::Full_WillowB_4x4,
-        &M88::Full_WillowC_4x4,
-        &M88::Full_WillowD_4x4,
-        
-        &M88::Full_CedarA_4x4,
-        &M88::Full_CedarB_4x4,
-        &M88::Full_CedarC_4x4,
-        &M88::Full_CedarD_4x4,
-        
-        &M88::Full_HickoryA_4x4,
-        &M88::Full_HickoryB_4x4,
-        &M88::Full_HickoryC_4x4,
-        &M88::Full_HickoryD_4x4,
-        
-        &M88::Full_JuniperA_4x4,
-        &M88::Full_JuniperB_4x4,
-        &M88::Full_JuniperC_4x4,
-        &M88::Full_JuniperD_4x4,
+        &M88::Full_MapleA_4x4, &M88::Full_MapleB_4x4, &M88::Full_MapleC_4x4, &M88::Full_MapleD_4x4,
+        &M88::Full_WillowA_4x4, &M88::Full_WillowB_4x4, &M88::Full_WillowC_4x4, &M88::Full_WillowD_4x4,
+        &M88::Full_CedarA_4x4, &M88::Full_CedarB_4x4, &M88::Full_CedarC_4x4, &M88::Full_CedarD_4x4,
+        &M88::Full_HickoryA_4x4, &M88::Full_HickoryB_4x4, &M88::Full_HickoryC_4x4, &M88::Full_HickoryD_4x4,
+        &M88::Full_JuniperA_4x4, &M88::Full_JuniperB_4x4, &M88::Full_JuniperC_4x4, &M88::Full_JuniperD_4x4,
     };
     
     (this->*kTable[pByte])();
+}
+
+void M88::SlickshotPermute(std::uint8_t pByteSelect_QuadA_A,
+                           std::uint8_t pByteSelect_QuadA_B,
+                           std::uint8_t pByteSelect_QuadB_A,
+                           std::uint8_t pByteSelect_QuadB_B,
+                           std::uint8_t pByteSelect_QuadC_A,
+                           std::uint8_t pByteSelect_QuadC_B,
+                           std::uint8_t pByteSelect_QuadD_A,
+                           std::uint8_t pByteSelect_QuadD_B,
+                           
+                           std::uint8_t pByteSwapsA,
+                           std::uint8_t pByteSwapsB,
+                           std::uint8_t pByteSwapsC,
+                           std::uint8_t pByteSwapsD,
+                           std::uint8_t pByteSwapsE,
+                           std::uint8_t pByteSwapsF,
+                           
+                           std::uint8_t pByteAmount) {
+    
+    //
+    // 1. Pick 4 slots from each 4x4 quad.
+    //
+    // Each M88QuadSelectsX::Pick4(...) returns a pointer to 4 slot indexes.
+    // These are real M88 slot indexes, not local 0..15 indexes.
+    //
+    
+    const std::uint8_t *aPickA = M88QuadSelectsA::Pick4(pByteSelect_QuadA_A,
+                                                        pByteSelect_QuadA_B);
+    
+    const std::uint8_t *aPickB = M88QuadSelectsB::Pick4(pByteSelect_QuadB_A,
+                                                        pByteSelect_QuadB_B);
+    
+    const std::uint8_t *aPickC = M88QuadSelectsC::Pick4(pByteSelect_QuadC_A,
+                                                        pByteSelect_QuadC_B);
+    
+    const std::uint8_t *aPickD = M88QuadSelectsD::Pick4(pByteSelect_QuadD_A,
+                                                        pByteSelect_QuadD_B);
+    
+    
+    //
+    // 2. Build the initial 16-slot picked list.
+    //
+    // mPermute[] is the ring path.
+    //
+    // At this point the ring path is:
+    //
+    //   [4 from QuadA]
+    //   [4 from QuadB]
+    //   [4 from QuadC]
+    //   [4 from QuadD]
+    //
+    
+    mPermute[0]  = aPickA[0];
+    mPermute[1]  = aPickA[1];
+    mPermute[2]  = aPickA[2];
+    mPermute[3]  = aPickA[3];
+    
+    mPermute[4]  = aPickB[0];
+    mPermute[5]  = aPickB[1];
+    mPermute[6]  = aPickB[2];
+    mPermute[7]  = aPickB[3];
+    
+    mPermute[8]  = aPickC[0];
+    mPermute[9]  = aPickC[1];
+    mPermute[10] = aPickC[2];
+    mPermute[11] = aPickC[3];
+    
+    mPermute[12] = aPickD[0];
+    mPermute[13] = aPickD[1];
+    mPermute[14] = aPickD[2];
+    mPermute[15] = aPickD[3];
+    
+    
+    //
+    // 3. Shuffle the ring path using 6 byte-controlled swaps.
+    //
+    // Each swap byte is split into two 4-bit indexes:
+    //
+    //   upper nibble = first index  in mPermute[0..15]
+    //   lower nibble = second index in mPermute[0..15]
+    //
+    // This does not move data yet.
+    // It only changes the order of the ring path.
+    //
+    
+    {
+        std::uint8_t aIndexA = (pByteSwapsA >> 4U) & 0x0FU;
+        std::uint8_t aIndexB = pByteSwapsA & 0x0FU;
+        
+        std::uint8_t aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+    
+    {
+        std::uint8_t aIndexA = (pByteSwapsB >> 4U) & 0x0FU;
+        std::uint8_t aIndexB = pByteSwapsB & 0x0FU;
+        
+        std::uint8_t aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+    
+    {
+        std::uint8_t aIndexA = (pByteSwapsC >> 4U) & 0x0FU;
+        std::uint8_t aIndexB = pByteSwapsC & 0x0FU;
+        
+        std::uint8_t aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+    
+    {
+        std::uint8_t aIndexA = (pByteSwapsD >> 4U) & 0x0FU;
+        std::uint8_t aIndexB = pByteSwapsD & 0x0FU;
+        
+        std::uint8_t aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+    
+    {
+        std::uint8_t aIndexA = (pByteSwapsE >> 4U) & 0x0FU;
+        std::uint8_t aIndexB = pByteSwapsE & 0x0FU;
+        
+        std::uint8_t aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+    
+    {
+        std::uint8_t aIndexA = (pByteSwapsF >> 4U) & 0x0FU;
+        std::uint8_t aIndexB = pByteSwapsF & 0x0FU;
+        
+        std::uint8_t aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+    
+    
+    //
+    // 4. Convert pByteAmount into a ring shift amount.
+    //
+    // Low nibble gives a clean uniform value from 0..15.
+    //
+    // amount = 0 means no data moves.
+    // Since this whole function is just "pick, shuffle path, ring-shift data",
+    // amount 0 is a true no-op and we can return.
+    //
+    
+    std::uint8_t aAmount = pByteAmount & 0x0FU;
+    
+    if (aAmount == 0) {
+        return;
+    }
+    
+    
+    //
+    // 5. Build the shifted source list.
+    //
+    // mPermute[] is the destination ring path.
+    // mPermuteTemp[] is the source ring path.
+    //
+    // For amount = 1:
+    //
+    //   destination mPermute[0] reads from source mPermute[15]
+    //   destination mPermute[1] reads from source mPermute[0]
+    //   destination mPermute[2] reads from source mPermute[1]
+    //   ...
+    //
+    // This matches:
+    //
+    //   data[path[0]] = old_data[path[15]]
+    //   data[path[1]] = old_data[path[0]]
+    //   data[path[2]] = old_data[path[1]]
+    //
+    
+    mPermuteTemp[0]  = mPermute[(0  + 16 - aAmount) & 0x0F];
+    mPermuteTemp[1]  = mPermute[(1  + 16 - aAmount) & 0x0F];
+    mPermuteTemp[2]  = mPermute[(2  + 16 - aAmount) & 0x0F];
+    mPermuteTemp[3]  = mPermute[(3  + 16 - aAmount) & 0x0F];
+    
+    mPermuteTemp[4]  = mPermute[(4  + 16 - aAmount) & 0x0F];
+    mPermuteTemp[5]  = mPermute[(5  + 16 - aAmount) & 0x0F];
+    mPermuteTemp[6]  = mPermute[(6  + 16 - aAmount) & 0x0F];
+    mPermuteTemp[7]  = mPermute[(7  + 16 - aAmount) & 0x0F];
+    
+    mPermuteTemp[8]  = mPermute[(8  + 16 - aAmount) & 0x0F];
+    mPermuteTemp[9]  = mPermute[(9  + 16 - aAmount) & 0x0F];
+    mPermuteTemp[10] = mPermute[(10 + 16 - aAmount) & 0x0F];
+    mPermuteTemp[11] = mPermute[(11 + 16 - aAmount) & 0x0F];
+    
+    mPermuteTemp[12] = mPermute[(12 + 16 - aAmount) & 0x0F];
+    mPermuteTemp[13] = mPermute[(13 + 16 - aAmount) & 0x0F];
+    mPermuteTemp[14] = mPermute[(14 + 16 - aAmount) & 0x0F];
+    mPermuteTemp[15] = mPermute[(15 + 16 - aAmount) & 0x0F];
+    
+    
+    //
+    // 6. Snapshot the 16 source data values.
+    //
+    // This is required because we are moving values inside mData.
+    // Without this temp copy, an early write could overwrite a value that
+    // a later read still needs.
+    //
+    
+    mPermuteData[0]  = mData[mPermuteTemp[0]];
+    mPermuteData[1]  = mData[mPermuteTemp[1]];
+    mPermuteData[2]  = mData[mPermuteTemp[2]];
+    mPermuteData[3]  = mData[mPermuteTemp[3]];
+    
+    mPermuteData[4]  = mData[mPermuteTemp[4]];
+    mPermuteData[5]  = mData[mPermuteTemp[5]];
+    mPermuteData[6]  = mData[mPermuteTemp[6]];
+    mPermuteData[7]  = mData[mPermuteTemp[7]];
+    
+    mPermuteData[8]  = mData[mPermuteTemp[8]];
+    mPermuteData[9]  = mData[mPermuteTemp[9]];
+    mPermuteData[10] = mData[mPermuteTemp[10]];
+    mPermuteData[11] = mData[mPermuteTemp[11]];
+    
+    mPermuteData[12] = mData[mPermuteTemp[12]];
+    mPermuteData[13] = mData[mPermuteTemp[13]];
+    mPermuteData[14] = mData[mPermuteTemp[14]];
+    mPermuteData[15] = mData[mPermuteTemp[15]];
+    
+    
+    //
+    // 7. Write the saved source values into the destination ring path.
+    //
+    // Destination path is mPermute[].
+    // Source values are already captured in mPermuteData[].
+    //
+    
+    mData[mPermute[0]]  = mPermuteData[0];
+    mData[mPermute[1]]  = mPermuteData[1];
+    mData[mPermute[2]]  = mPermuteData[2];
+    mData[mPermute[3]]  = mPermuteData[3];
+    
+    mData[mPermute[4]]  = mPermuteData[4];
+    mData[mPermute[5]]  = mPermuteData[5];
+    mData[mPermute[6]]  = mPermuteData[6];
+    mData[mPermute[7]]  = mPermuteData[7];
+    
+    mData[mPermute[8]]  = mPermuteData[8];
+    mData[mPermute[9]]  = mPermuteData[9];
+    mData[mPermute[10]] = mPermuteData[10];
+    mData[mPermute[11]] = mPermuteData[11];
+    
+    mData[mPermute[12]] = mPermuteData[12];
+    mData[mPermute[13]] = mPermuteData[13];
+    mData[mPermute[14]] = mPermuteData[14];
+    mData[mPermute[15]] = mPermuteData[15];
 }
 
 

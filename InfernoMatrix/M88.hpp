@@ -43,6 +43,31 @@ public:
     void                                        SlickshotFullA(std::uint8_t pByte);
     void                                        SlickshotFullB(std::uint8_t pByte);
     
+    void                                        SlickshotPermute(std::uint8_t pByteSelect_QuadA_A,
+                                                                 std::uint8_t pByteSelect_QuadA_B,
+                                                                 std::uint8_t pByteSelect_QuadB_A,
+                                                                 std::uint8_t pByteSelect_QuadB_B,
+                                                                 std::uint8_t pByteSelect_QuadC_A,
+                                                                 std::uint8_t pByteSelect_QuadC_B,
+                                                                 std::uint8_t pByteSelect_QuadD_A,
+                                                                 std::uint8_t pByteSelect_QuadD_B,
+                                                                 
+                                                                 std::uint8_t pByteSwapsA,
+                                                                 std::uint8_t pByteSwapsB,
+                                                                 std::uint8_t pByteSwapsC,
+                                                                 std::uint8_t pByteSwapsD,
+                                                                 std::uint8_t pByteSwapsE,
+                                                                 std::uint8_t pByteSwapsF,
+                                                                 
+                                                                 std::uint8_t pByteAmount);
+    
+    std::uint8_t                                mPermute[16];
+    std::uint8_t                                mPermuteTemp[16];
+    std::uint8_t                                mPermuteData[16];
+    
+    
+    
+    
     
 
     // ============================================================
