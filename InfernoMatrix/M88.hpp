@@ -2,7 +2,7 @@
 //  M88.hpp
 //  CyberMatrix
 //
-//  Created by nick on 5/29/26.
+//  Created by Six Pack Abs on 5/29/26.
 //
 
 #ifndef M88_hpp
@@ -30,6 +30,17 @@ public:
     void                                        Slickshot(std::uint8_t *pOperationData,
                                                           std::uint8_t *pSource,
                                                           std::uint8_t *pDestination);
+    
+    void                                        SlickshotUnroll(std::uint8_t *pDestination,
+                                                                std::uint8_t pByteSwapsA,
+                                                                std::uint8_t pByteSwapsB,
+                                                                std::uint8_t pByteSwapsC,
+                                                                std::uint8_t pByteSwapsD,
+                                                                
+                                                                std::uint8_t pByteSwapsE,
+                                                                std::uint8_t pByteSwapsF,
+                                                                std::uint8_t pByteSwapsG,
+                                                                std::uint8_t pByteSwapsH);
 
 
     // ============================================================
@@ -58,17 +69,14 @@ public:
                                                                  std::uint8_t pByteSwapsD,
                                                                  std::uint8_t pByteSwapsE,
                                                                  std::uint8_t pByteSwapsF,
+                                                                 std::uint8_t pByteSwapsG,
+                                                                 std::uint8_t pByteSwapsH,
                                                                  
                                                                  std::uint8_t pByteAmount);
     
     std::uint8_t                                mPermute[16];
     std::uint8_t                                mPermuteTemp[16];
     std::uint8_t                                mPermuteData[16];
-    
-    
-    
-    
-    
 
     // ============================================================
     // Full Ops (512)

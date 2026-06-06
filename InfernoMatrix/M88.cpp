@@ -2,7 +2,7 @@
 //  M88.cpp
 //  CyberMatrix
 //
-//  Created by nick on 5/29/26.
+//  Created by Six Pack Abs on 5/29/26.
 //
 
 #include "M88.hpp"
@@ -34,6 +34,211 @@ std::size_t M88::Y(std::size_t pSlot) {
     return pSlot / 8U;
 }
 
+void M88::Slickshot(std::uint8_t *pOperationData,
+                    std::uint8_t *pSource,
+                    std::uint8_t *pDestination) {
+    
+    memcpy(mData, pSource, 64U);
+    
+    SlickshotPermute(pOperationData[8],
+                     pOperationData[9],
+                     pOperationData[10],
+                     pOperationData[11],
+                     pOperationData[12],
+                     pOperationData[13],
+                     pOperationData[14],
+                     pOperationData[15],
+                     
+                     pOperationData[16],
+                     pOperationData[17],
+                     pOperationData[18],
+                     pOperationData[19],
+                     pOperationData[20],
+                     pOperationData[21],
+                     pOperationData[22],
+                     pOperationData[23],
+                     
+                     pOperationData[24]);
+    
+    SlickshotFullA(pOperationData[25]);
+    
+    SlickshotQuadA(pOperationData[26]);
+    SlickshotQuadB(pOperationData[27]);
+    SlickshotQuadC(pOperationData[28]);
+    SlickshotQuadD(pOperationData[29]);
+    
+    SlickshotMini(pOperationData[30]);
+    
+    SlickshotPermute(pOperationData[31],
+                     pOperationData[32],
+                     pOperationData[33],
+                     pOperationData[34],
+                     pOperationData[35],
+                     pOperationData[36],
+                     pOperationData[37],
+                     pOperationData[38],
+                     
+                     pOperationData[39],
+                     pOperationData[40],
+                     pOperationData[41],
+                     pOperationData[42],
+                     pOperationData[43],
+                     pOperationData[44],
+                     pOperationData[45],
+                     pOperationData[46],
+                     
+                     pOperationData[47]);
+    
+    SlickshotMini(pOperationData[48]);
+    
+    SlickshotQuadD(pOperationData[49]);
+    SlickshotQuadC(pOperationData[50]);
+    SlickshotQuadB(pOperationData[51]);
+    SlickshotQuadA(pOperationData[52]);
+    
+    SlickshotFullB(pOperationData[53]);
+    
+    SlickshotUnroll(pDestination,
+                    pOperationData[54],
+                    pOperationData[55],
+                    pOperationData[56],
+                    pOperationData[57],
+                    pOperationData[58],
+                    pOperationData[59],
+                    pOperationData[60],
+                    pOperationData[61]);
+    
+}
+
+void M88::SlickshotUnroll(std::uint8_t *pDestination,
+                          std::uint8_t pByteSwapsA,
+                          std::uint8_t pByteSwapsB,
+                          std::uint8_t pByteSwapsC,
+                          std::uint8_t pByteSwapsD,
+                          std::uint8_t pByteSwapsE,
+                          std::uint8_t pByteSwapsF,
+                          std::uint8_t pByteSwapsG,
+                          std::uint8_t pByteSwapsH) {
+    
+    //
+    // 1. Build the initial row order.
+    //
+    // mPermute[0..7] is the output row path.
+    // Each value is a row index into mData.
+    //
+    
+    mPermute[0] = 0;
+    mPermute[1] = 1;
+    mPermute[2] = 2;
+    mPermute[3] = 3;
+    mPermute[4] = 4;
+    mPermute[5] = 5;
+    mPermute[6] = 6;
+    mPermute[7] = 7;
+    
+    
+    //
+    // 2. Shuffle the row order using 8 byte-controlled swaps.
+    //
+    // Each swap byte uses:
+    //
+    //   upper nibble bits 4..6 = first index  in mPermute[0..7]
+    //   lower nibble bits 0..2 = second index in mPermute[0..7]
+    //
+    // Bit 7 and bit 3 are ignored.
+    //
+    std::uint8_t aIndexA = 0;
+    std::uint8_t aIndexB = 0;
+    std::uint8_t aHold = 0;
+
+    {
+        aIndexA = (pByteSwapsA >> 4U) & 0x07U;
+        aIndexB = (pByteSwapsA >> 0U) & 0x07U;
+        
+        aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+
+    {
+        aIndexA = (pByteSwapsB >> 5U) & 0x07U;
+        aIndexB = (pByteSwapsB >> 1U) & 0x07U;
+        
+        aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+
+    {
+        aIndexA = (pByteSwapsC >> 4U) & 0x07U;
+        aIndexB = (pByteSwapsC >> 1U) & 0x07U;
+        
+        aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+
+    {
+        aIndexA = (pByteSwapsD >> 5U) & 0x07U;
+        aIndexB = (pByteSwapsD >> 0U) & 0x07U;
+        
+        aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+
+    {
+        aIndexA = (pByteSwapsE >> 0U) & 0x07U;
+        aIndexB = (pByteSwapsE >> 4U) & 0x07U;
+        
+        aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+
+    {
+        aIndexA = (pByteSwapsF >> 1U) & 0x07U;
+        aIndexB = (pByteSwapsF >> 5U) & 0x07U;
+        
+        aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+
+    {
+        aIndexA = (pByteSwapsG >> 1U) & 0x07U;
+        aIndexB = (pByteSwapsG >> 4U) & 0x07U;
+        
+        aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+
+    {
+        aIndexA = (pByteSwapsH >> 0U) & 0x07U;
+        aIndexB = (pByteSwapsH >> 5U) & 0x07U;
+        
+        aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+    
+    
+    //
+    // 3. Store the rows in the shuffled order.
+    //
+    // Each row is 8 bytes.
+    //
+    
+    memcpy(pDestination +  0, mData + (mPermute[0] << 3), 8);
+    memcpy(pDestination +  8, mData + (mPermute[1] << 3), 8);
+    memcpy(pDestination + 16, mData + (mPermute[2] << 3), 8);
+    memcpy(pDestination + 24, mData + (mPermute[3] << 3), 8);
+    memcpy(pDestination + 32, mData + (mPermute[4] << 3), 8);
+    memcpy(pDestination + 40, mData + (mPermute[5] << 3), 8);
+    memcpy(pDestination + 48, mData + (mPermute[6] << 3), 8);
+    memcpy(pDestination + 56, mData + (mPermute[7] << 3), 8);
+}
 void M88::SlickshotMini(std::uint8_t pByte) {
     
     typedef void (M88::*Fn)();
@@ -793,6 +998,8 @@ void M88::SlickshotPermute(std::uint8_t pByteSelect_QuadA_A,
                            std::uint8_t pByteSwapsD,
                            std::uint8_t pByteSwapsE,
                            std::uint8_t pByteSwapsF,
+                           std::uint8_t pByteSwapsG,
+                           std::uint8_t pByteSwapsH,
                            
                            std::uint8_t pByteAmount) {
     
@@ -862,56 +1069,78 @@ void M88::SlickshotPermute(std::uint8_t pByteSelect_QuadA_A,
     // It only changes the order of the ring path.
     //
     
+    std::uint8_t aIndexA = 0;
+    std::uint8_t aIndexB = 0;
+    std::uint8_t aHold = 0;
+
     {
-        std::uint8_t aIndexA = (pByteSwapsA >> 4U) & 0x0FU;
-        std::uint8_t aIndexB = pByteSwapsA & 0x0FU;
+        aIndexA = (pByteSwapsA >> 4U) & 0x0FU;
+        aIndexB = (pByteSwapsA >> 0U) & 0x0FU;
         
-        std::uint8_t aHold = mPermute[aIndexA];
+        aHold = mPermute[aIndexA];
         mPermute[aIndexA] = mPermute[aIndexB];
         mPermute[aIndexB] = aHold;
     }
-    
+
     {
-        std::uint8_t aIndexA = (pByteSwapsB >> 4U) & 0x0FU;
-        std::uint8_t aIndexB = pByteSwapsB & 0x0FU;
+        aIndexA = (pByteSwapsB >> 4U) & 0x0FU;
+        aIndexB = (pByteSwapsB >> 0U) & 0x0FU;
         
-        std::uint8_t aHold = mPermute[aIndexA];
+        aHold = mPermute[aIndexA];
         mPermute[aIndexA] = mPermute[aIndexB];
         mPermute[aIndexB] = aHold;
     }
-    
+
     {
-        std::uint8_t aIndexA = (pByteSwapsC >> 4U) & 0x0FU;
-        std::uint8_t aIndexB = pByteSwapsC & 0x0FU;
+        aIndexA = (pByteSwapsC >> 4U) & 0x0FU;
+        aIndexB = (pByteSwapsC >> 0U) & 0x0FU;
         
-        std::uint8_t aHold = mPermute[aIndexA];
+        aHold = mPermute[aIndexA];
         mPermute[aIndexA] = mPermute[aIndexB];
         mPermute[aIndexB] = aHold;
     }
-    
+
     {
-        std::uint8_t aIndexA = (pByteSwapsD >> 4U) & 0x0FU;
-        std::uint8_t aIndexB = pByteSwapsD & 0x0FU;
+        aIndexA = (pByteSwapsD >> 4U) & 0x0FU;
+        aIndexB = (pByteSwapsD >> 0U) & 0x0FU;
         
-        std::uint8_t aHold = mPermute[aIndexA];
+        aHold = mPermute[aIndexA];
         mPermute[aIndexA] = mPermute[aIndexB];
         mPermute[aIndexB] = aHold;
     }
-    
+
     {
-        std::uint8_t aIndexA = (pByteSwapsE >> 4U) & 0x0FU;
-        std::uint8_t aIndexB = pByteSwapsE & 0x0FU;
+        aIndexA = (pByteSwapsE >> 4U) & 0x0FU;
+        aIndexB = (pByteSwapsE >> 0U) & 0x0FU;
         
-        std::uint8_t aHold = mPermute[aIndexA];
+        aHold = mPermute[aIndexA];
         mPermute[aIndexA] = mPermute[aIndexB];
         mPermute[aIndexB] = aHold;
     }
-    
+
     {
-        std::uint8_t aIndexA = (pByteSwapsF >> 4U) & 0x0FU;
-        std::uint8_t aIndexB = pByteSwapsF & 0x0FU;
+        aIndexA = (pByteSwapsF >> 4U) & 0x0FU;
+        aIndexB = (pByteSwapsF >> 0U) & 0x0FU;
         
-        std::uint8_t aHold = mPermute[aIndexA];
+        aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+
+    {
+        aIndexA = (pByteSwapsG >> 4U) & 0x0FU;
+        aIndexB = (pByteSwapsG >> 0U) & 0x0FU;
+        
+        aHold = mPermute[aIndexA];
+        mPermute[aIndexA] = mPermute[aIndexB];
+        mPermute[aIndexB] = aHold;
+    }
+
+    {
+        aIndexA = (pByteSwapsH >> 4U) & 0x0FU;
+        aIndexB = (pByteSwapsH >> 0U) & 0x0FU;
+        
+        aHold = mPermute[aIndexA];
         mPermute[aIndexA] = mPermute[aIndexB];
         mPermute[aIndexB] = aHold;
     }

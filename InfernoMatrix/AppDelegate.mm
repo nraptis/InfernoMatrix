@@ -1,8 +1,8 @@
 //
-//  AppDelegate.m
+//  AppDelegate.mm
 //  CyberMatrix
 //
-//  Created by nick on 5/29/26.
+//  Created by Six Pack Abs on 5/29/26.
 //
 
 #import "AppDelegate.h"
