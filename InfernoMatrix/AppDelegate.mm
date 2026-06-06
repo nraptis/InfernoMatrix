@@ -65,7 +65,7 @@ std::vector<std::uint8_t> M88CaptureData(const M88& pMatrix) {
 
 
 
-void GatherSlickshotMatrices(
+void GatherDispatchMatrices(
     std::vector<std::vector<std::uint8_t>>& aResMini,
     std::vector<std::vector<std::uint8_t>>& aResQuadA,
     std::vector<std::vector<std::uint8_t>>& aResQuadB,
@@ -96,49 +96,49 @@ void GatherSlickshotMatrices(
         {
             M88 aMatrix;
             aMatrix.Reset();
-            aMatrix.SlickshotMini(aCode);
+            aMatrix.DispatchMini(aCode);
             aResMini.push_back(M88CaptureData(aMatrix));
         }
 
         {
             M88 aMatrix;
             aMatrix.Reset();
-            aMatrix.SlickshotQuadA(aCode);
+            aMatrix.DispatchQuadA(aCode);
             aResQuadA.push_back(M88CaptureData(aMatrix));
         }
 
         {
             M88 aMatrix;
             aMatrix.Reset();
-            aMatrix.SlickshotQuadB(aCode);
+            aMatrix.DispatchQuadB(aCode);
             aResQuadB.push_back(M88CaptureData(aMatrix));
         }
 
         {
             M88 aMatrix;
             aMatrix.Reset();
-            aMatrix.SlickshotQuadC(aCode);
+            aMatrix.DispatchQuadC(aCode);
             aResQuadC.push_back(M88CaptureData(aMatrix));
         }
 
         {
             M88 aMatrix;
             aMatrix.Reset();
-            aMatrix.SlickshotQuadD(aCode);
+            aMatrix.DispatchQuadD(aCode);
             aResQuadD.push_back(M88CaptureData(aMatrix));
         }
 
         {
             M88 aMatrix;
             aMatrix.Reset();
-            aMatrix.SlickshotFullA(aCode);
+            aMatrix.DispatchFullA(aCode);
             aResFullA.push_back(M88CaptureData(aMatrix));
         }
 
         {
             M88 aMatrix;
             aMatrix.Reset();
-            aMatrix.SlickshotFullB(aCode);
+            aMatrix.DispatchFullB(aCode);
             aResFullB.push_back(M88CaptureData(aMatrix));
         }
     }
@@ -177,7 +177,7 @@ static int LowestDifferenceCount(
     return aLowest;
 }
 
-void TestSlickshotLowestDifferences() {
+void TestDispatchLowestDifferences() {
     
     std::vector<std::vector<std::uint8_t>> aResMini;
     std::vector<std::vector<std::uint8_t>> aResQuadA;
@@ -187,7 +187,7 @@ void TestSlickshotLowestDifferences() {
     std::vector<std::vector<std::uint8_t>> aResFullA;
     std::vector<std::vector<std::uint8_t>> aResFullB;
 
-    GatherSlickshotMatrices(
+    GatherDispatchMatrices(
         aResMini,
         aResQuadA,
         aResQuadB,
@@ -274,7 +274,7 @@ static void AppendList(
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
     
     
-    TestSlickshotLowestDifferences();
+    TestDispatchLowestDifferences();
     
     std::vector<std::vector<std::uint8_t>> aResMini;
         std::vector<std::vector<std::uint8_t>> aResQuadA;
@@ -284,7 +284,7 @@ static void AppendList(
         std::vector<std::vector<std::uint8_t>> aResFullA;
         std::vector<std::vector<std::uint8_t>> aResFullB;
 
-        GatherSlickshotMatrices(
+        GatherDispatchMatrices(
             aResMini,
             aResQuadA,
             aResQuadB,
@@ -316,13 +316,13 @@ static void AppendList(
                 }
 
                 if (aDiff == 0) {
-                    printf("Duplicate slickshot matrix output: big index %d == %d\n");
+                    printf("Duplicate Dispatch matrix output: big index %d == %d\n");
                     exit(0);
                 }
             }
         }
 
-        printf("All slickshots lowest diff = %d\n", aLowest);
+        printf("All Dispatchs lowest diff = %d\n", aLowest);
     
     
     //

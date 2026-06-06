@@ -27,11 +27,11 @@ public:
     std::uint8_t                                mData[64];
 
     // ignores bytes 1 and 2, uses last byte to unroll
-    void                                        Slickshot(std::uint8_t *pOperationData,
+    void                                        Dispatch(std::uint8_t *pOperationData,
                                                           std::uint8_t *pSource,
                                                           std::uint8_t *pDestination);
     
-    void                                        SlickshotUnroll(std::uint8_t *pDestination,
+    void                                        DispatchUnroll(std::uint8_t *pDestination,
                                                                 std::uint8_t pByteSwapsA,
                                                                 std::uint8_t pByteSwapsB,
                                                                 std::uint8_t pByteSwapsC,
@@ -46,15 +46,15 @@ public:
     // ============================================================
     // Byte Dispatch
     // ============================================================
-    void                                        SlickshotMini(std::uint8_t pByte);
-    void                                        SlickshotQuadA(std::uint8_t pByte);
-    void                                        SlickshotQuadB(std::uint8_t pByte);
-    void                                        SlickshotQuadC(std::uint8_t pByte);
-    void                                        SlickshotQuadD(std::uint8_t pByte);
-    void                                        SlickshotFullA(std::uint8_t pByte);
-    void                                        SlickshotFullB(std::uint8_t pByte);
+    void                                        DispatchMini(std::uint8_t pByte);
+    void                                        DispatchQuadA(std::uint8_t pByte);
+    void                                        DispatchQuadB(std::uint8_t pByte);
+    void                                        DispatchQuadC(std::uint8_t pByte);
+    void                                        DispatchQuadD(std::uint8_t pByte);
+    void                                        DispatchFullA(std::uint8_t pByte);
+    void                                        DispatchFullB(std::uint8_t pByte);
     
-    void                                        SlickshotPermute(std::uint8_t pByteSelect_QuadA_A,
+    void                                        DispatchPermute(std::uint8_t pByteSelect_QuadA_A,
                                                                  std::uint8_t pByteSelect_QuadA_B,
                                                                  std::uint8_t pByteSelect_QuadB_A,
                                                                  std::uint8_t pByteSelect_QuadB_B,

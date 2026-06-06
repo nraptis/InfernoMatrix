@@ -34,13 +34,13 @@ std::size_t M88::Y(std::size_t pSlot) {
     return pSlot / 8U;
 }
 
-void M88::Slickshot(std::uint8_t *pOperationData,
+void M88::Dispatch(std::uint8_t *pOperationData,
                     std::uint8_t *pSource,
                     std::uint8_t *pDestination) {
     
     memcpy(mData, pSource, 64U);
     
-    SlickshotPermute(pOperationData[8],
+    DispatchPermute(pOperationData[8],
                      pOperationData[9],
                      pOperationData[10],
                      pOperationData[11],
@@ -60,16 +60,16 @@ void M88::Slickshot(std::uint8_t *pOperationData,
                      
                      pOperationData[24]);
     
-    SlickshotFullA(pOperationData[25]);
+    DispatchFullA(pOperationData[25]);
     
-    SlickshotQuadA(pOperationData[26]);
-    SlickshotQuadB(pOperationData[27]);
-    SlickshotQuadC(pOperationData[28]);
-    SlickshotQuadD(pOperationData[29]);
+    DispatchQuadA(pOperationData[26]);
+    DispatchQuadB(pOperationData[27]);
+    DispatchQuadC(pOperationData[28]);
+    DispatchQuadD(pOperationData[29]);
     
-    SlickshotMini(pOperationData[30]);
+    DispatchMini(pOperationData[30]);
     
-    SlickshotPermute(pOperationData[31],
+    DispatchPermute(pOperationData[31],
                      pOperationData[32],
                      pOperationData[33],
                      pOperationData[34],
@@ -89,16 +89,16 @@ void M88::Slickshot(std::uint8_t *pOperationData,
                      
                      pOperationData[47]);
     
-    SlickshotMini(pOperationData[48]);
+    DispatchMini(pOperationData[48]);
     
-    SlickshotQuadD(pOperationData[49]);
-    SlickshotQuadC(pOperationData[50]);
-    SlickshotQuadB(pOperationData[51]);
-    SlickshotQuadA(pOperationData[52]);
+    DispatchQuadD(pOperationData[49]);
+    DispatchQuadC(pOperationData[50]);
+    DispatchQuadB(pOperationData[51]);
+    DispatchQuadA(pOperationData[52]);
     
-    SlickshotFullB(pOperationData[53]);
+    DispatchFullB(pOperationData[53]);
     
-    SlickshotUnroll(pDestination,
+    DispatchUnroll(pDestination,
                     pOperationData[54],
                     pOperationData[55],
                     pOperationData[56],
@@ -110,7 +110,7 @@ void M88::Slickshot(std::uint8_t *pOperationData,
     
 }
 
-void M88::SlickshotUnroll(std::uint8_t *pDestination,
+void M88::DispatchUnroll(std::uint8_t *pDestination,
                           std::uint8_t pByteSwapsA,
                           std::uint8_t pByteSwapsB,
                           std::uint8_t pByteSwapsC,
@@ -239,7 +239,7 @@ void M88::SlickshotUnroll(std::uint8_t *pDestination,
     memcpy(pDestination + 48, mData + (mPermute[6] << 3), 8);
     memcpy(pDestination + 56, mData + (mPermute[7] << 3), 8);
 }
-void M88::SlickshotMini(std::uint8_t pByte) {
+void M88::DispatchMini(std::uint8_t pByte) {
     
     typedef void (M88::*Fn)();
     
@@ -539,7 +539,7 @@ void M88::SlickshotMini(std::uint8_t pByte) {
     (this->*kTable[aOp][aMini])();
 }
 
-void M88::SlickshotQuadA(std::uint8_t pByte) {
+void M88::DispatchQuadA(std::uint8_t pByte) {
     
     typedef void (M88::*Fn)();
     
@@ -613,7 +613,7 @@ void M88::SlickshotQuadA(std::uint8_t pByte) {
     (this->*kTable[pByte])();
 }
 
-void M88::SlickshotQuadB(std::uint8_t pByte) {
+void M88::DispatchQuadB(std::uint8_t pByte) {
     
     typedef void (M88::*Fn)();
     
@@ -687,7 +687,7 @@ void M88::SlickshotQuadB(std::uint8_t pByte) {
     (this->*kTable[pByte])();
 }
 
-void M88::SlickshotQuadC(std::uint8_t pByte) {
+void M88::DispatchQuadC(std::uint8_t pByte) {
     
     typedef void (M88::*Fn)();
     
@@ -761,7 +761,7 @@ void M88::SlickshotQuadC(std::uint8_t pByte) {
     (this->*kTable[pByte])();
 }
 
-void M88::SlickshotQuadD(std::uint8_t pByte) {
+void M88::DispatchQuadD(std::uint8_t pByte) {
     
     typedef void (M88::*Fn)();
     
@@ -835,7 +835,7 @@ void M88::SlickshotQuadD(std::uint8_t pByte) {
     (this->*kTable[pByte])();
 }
 
-void M88::SlickshotFullA(std::uint8_t pByte) {
+void M88::DispatchFullA(std::uint8_t pByte) {
     
     typedef void (M88::*Fn)();
     
@@ -909,7 +909,7 @@ void M88::SlickshotFullA(std::uint8_t pByte) {
     (this->*kTable[pByte])();
 }
 
-void M88::SlickshotFullB(std::uint8_t pByte) {
+void M88::DispatchFullB(std::uint8_t pByte) {
     
     typedef void (M88::*Fn)();
     
@@ -983,7 +983,7 @@ void M88::SlickshotFullB(std::uint8_t pByte) {
     (this->*kTable[pByte])();
 }
 
-void M88::SlickshotPermute(std::uint8_t pByteSelect_QuadA_A,
+void M88::DispatchPermute(std::uint8_t pByteSelect_QuadA_A,
                            std::uint8_t pByteSelect_QuadA_B,
                            std::uint8_t pByteSelect_QuadB_A,
                            std::uint8_t pByteSelect_QuadB_B,
