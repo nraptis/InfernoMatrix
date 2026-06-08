@@ -15,254 +15,10 @@
 #include <vector>
 #include "M88.hpp"
 
-
-
-struct Pick4 {
-    std::uint8_t t[4];
-};
-
-static void PrintGridComment(const Pick4& p, std::size_t index) {
-    char grid[4][4];
-
-    for (int r = 0; r < 4; ++r) {
-        for (int c = 0; c < 4; ++c) {
-            grid[r][c] = '.';
-        }
-    }
-
-    grid[p.t[0] >> 2][p.t[0] & 3U] = 'A';
-    grid[p.t[1] >> 2][p.t[1] & 3U] = 'B';
-    grid[p.t[2] >> 2][p.t[2] & 3U] = 'C';
-    grid[p.t[3] >> 2][p.t[3] & 3U] = 'D';
-
-    std::printf("        // %4zu: { %2u, %2u, %2u, %2u }\n",
-                index,
-                static_cast<unsigned>(p.t[0]),
-                static_cast<unsigned>(p.t[1]),
-                static_cast<unsigned>(p.t[2]),
-                static_cast<unsigned>(p.t[3]));
-
-    for (int r = 0; r < 4; ++r) {
-        std::printf("        // ");
-        for (int c = 0; c < 4; ++c) {
-            std::printf("%c ", grid[r][c]);
-        }
-        std::printf("\n");
-    }
-}
-
-
-
-std::vector<std::uint8_t> M88CaptureData(const M88& pMatrix) {
-    std::vector<std::uint8_t> aVector(64);
-
-    for (int i = 0; i < 64; i++) {
-        aVector[i] = pMatrix.mData[i];
-    }
-
-    return aVector;
-}
-
-
-
-void GatherDispatchMatrices(
-    std::vector<std::vector<std::uint8_t>>& aResMini,
-    std::vector<std::vector<std::uint8_t>>& aResQuadA,
-    std::vector<std::vector<std::uint8_t>>& aResQuadB,
-    std::vector<std::vector<std::uint8_t>>& aResQuadC,
-    std::vector<std::vector<std::uint8_t>>& aResQuadD,
-    std::vector<std::vector<std::uint8_t>>& aResFullA,
-    std::vector<std::vector<std::uint8_t>>& aResFullB
-) {
-    aResMini.clear();
-    aResQuadA.clear();
-    aResQuadB.clear();
-    aResQuadC.clear();
-    aResQuadD.clear();
-    aResFullA.clear();
-    aResFullB.clear();
-
-    aResMini.reserve(256);
-    aResQuadA.reserve(256);
-    aResQuadB.reserve(256);
-    aResQuadC.reserve(256);
-    aResQuadD.reserve(256);
-    aResFullA.reserve(256);
-    aResFullB.reserve(256);
-
-    for (int aByte = 0; aByte < 256; aByte++) {
-        const std::uint8_t aCode = static_cast<std::uint8_t>(aByte);
-
-        {
-            M88 aMatrix;
-            aMatrix.Reset();
-            aMatrix.DispatchMini(aCode);
-            aResMini.push_back(M88CaptureData(aMatrix));
-        }
-
-        {
-            M88 aMatrix;
-            aMatrix.Reset();
-            aMatrix.DispatchQuadA(aCode);
-            aResQuadA.push_back(M88CaptureData(aMatrix));
-        }
-
-        {
-            M88 aMatrix;
-            aMatrix.Reset();
-            aMatrix.DispatchQuadB(aCode);
-            aResQuadB.push_back(M88CaptureData(aMatrix));
-        }
-
-        {
-            M88 aMatrix;
-            aMatrix.Reset();
-            aMatrix.DispatchQuadC(aCode);
-            aResQuadC.push_back(M88CaptureData(aMatrix));
-        }
-
-        {
-            M88 aMatrix;
-            aMatrix.Reset();
-            aMatrix.DispatchQuadD(aCode);
-            aResQuadD.push_back(M88CaptureData(aMatrix));
-        }
-
-        {
-            M88 aMatrix;
-            aMatrix.Reset();
-            aMatrix.DispatchFullA(aCode);
-            aResFullA.push_back(M88CaptureData(aMatrix));
-        }
-
-        {
-            M88 aMatrix;
-            aMatrix.Reset();
-            aMatrix.DispatchFullB(aCode);
-            aResFullB.push_back(M88CaptureData(aMatrix));
-        }
-    }
-}
-
-static int DifferenceCount(
-    const std::vector<std::uint8_t>& a,
-    const std::vector<std::uint8_t>& b
-) {
-    int aCount = 0;
-
-    for (int i = 0; i < 64; i++) {
-        if (a[i] != b[i]) {
-            aCount++;
-        }
-    }
-
-    return aCount;
-}
-
-static int LowestDifferenceCount(
-    const std::vector<std::vector<std::uint8_t>>& aList
-) {
-    int aLowest = 64;
-
-    for (int i = 0; i < static_cast<int>(aList.size()); i++) {
-        for (int j = i + 1; j < static_cast<int>(aList.size()); j++) {
-            int aDiff = DifferenceCount(aList[i], aList[j]);
-
-            if (aDiff < aLowest) {
-                aLowest = aDiff;
-            }
-        }
-    }
-
-    return aLowest;
-}
-
-void TestDispatchLowestDifferences() {
-    
-    std::vector<std::vector<std::uint8_t>> aResMini;
-    std::vector<std::vector<std::uint8_t>> aResQuadA;
-    std::vector<std::vector<std::uint8_t>> aResQuadB;
-    std::vector<std::vector<std::uint8_t>> aResQuadC;
-    std::vector<std::vector<std::uint8_t>> aResQuadD;
-    std::vector<std::vector<std::uint8_t>> aResFullA;
-    std::vector<std::vector<std::uint8_t>> aResFullB;
-
-    GatherDispatchMatrices(
-        aResMini,
-        aResQuadA,
-        aResQuadB,
-        aResQuadC,
-        aResQuadD,
-        aResFullA,
-        aResFullB
-    );
-
-    int aLowestMini  = LowestDifferenceCount(aResMini);
-    int aLowestQuadA = LowestDifferenceCount(aResQuadA);
-    int aLowestQuadB = LowestDifferenceCount(aResQuadB);
-    int aLowestQuadC = LowestDifferenceCount(aResQuadC);
-    int aLowestQuadD = LowestDifferenceCount(aResQuadD);
-    int aLowestFullA = LowestDifferenceCount(aResFullA);
-    int aLowestFullB = LowestDifferenceCount(aResFullB);
-
-    printf("Mini  lowest diff = %d\n", aLowestMini);
-    printf("QuadA lowest diff = %d\n", aLowestQuadA);
-    printf("QuadB lowest diff = %d\n", aLowestQuadB);
-    printf("QuadC lowest diff = %d\n", aLowestQuadC);
-    printf("QuadD lowest diff = %d\n", aLowestQuadD);
-    printf("FullA lowest diff = %d\n", aLowestFullA);
-    printf("FullB lowest diff = %d\n", aLowestFullB);
-}
-
-struct DiffRecord {
-    int i;
-    int j;
-    int diff;
-};
-
-static std::vector<DiffRecord> LowestDifferenceRecords(
-    const std::vector<std::vector<std::uint8_t>>& aList,
-    int aCount
-) {
-    std::vector<DiffRecord> aRecords;
-
-    for (int i = 0; i < static_cast<int>(aList.size()); i++) {
-        for (int j = i + 1; j < static_cast<int>(aList.size()); j++) {
-            int aDiff = DifferenceCount(aList[i], aList[j]);
-
-            DiffRecord aRecord;
-            aRecord.i = i;
-            aRecord.j = j;
-            aRecord.diff = aDiff;
-
-            aRecords.push_back(aRecord);
-        }
-    }
-
-    std::sort(
-        aRecords.begin(),
-        aRecords.end(),
-        [](const DiffRecord& a, const DiffRecord& b) {
-            return a.diff < b.diff;
-        }
-    );
-
-    if (static_cast<int>(aRecords.size()) > aCount) {
-        aRecords.resize(aCount);
-    }
-
-    return aRecords;
-}
-
-
-static void AppendList(
-    std::vector<std::vector<std::uint8_t>>& aBigList,
-    const std::vector<std::vector<std::uint8_t>>& aList
-) {
-    for (int i = 0; i < static_cast<int>(aList.size()); i++) {
-        aBigList.push_back(aList[i]);
-    }
-}
+#include <array>
+#include <cstdint>
+#include <cstdio>
+#include <unordered_map>
 
 @interface AppDelegate ()
 
@@ -271,58 +27,156 @@ static void AppendList(
 
 @implementation AppDelegate
 
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
+static std::uint32_t NextRandomU32(std::uint32_t& pState) {
+    pState = pState * 1664525U + 1013904223U;
+    return pState;
+}
+
+static std::uint8_t NextRandomByte(std::uint32_t& pState) {
+    return static_cast<std::uint8_t>(NextRandomU32(pState) >> 24U);
+}
+
+void TestDispatchPermuteRandomMix(std::uint32_t pSeed,
+                                  std::uint64_t pLoops) {
     
+    std::uint64_t aChangedCountHistogram[65] = {};
+    std::uint64_t aTileChangedHistogram[64] = {};
+    std::uint64_t aValueMovedDistanceHistogram[64] = {};
+    std::uint64_t aBadChangedCount = 0;
     
-    TestDispatchLowestDifferences();
+    M88 aMat;
     
-    std::vector<std::vector<std::uint8_t>> aResMini;
-        std::vector<std::vector<std::uint8_t>> aResQuadA;
-        std::vector<std::vector<std::uint8_t>> aResQuadB;
-        std::vector<std::vector<std::uint8_t>> aResQuadC;
-        std::vector<std::vector<std::uint8_t>> aResQuadD;
-        std::vector<std::vector<std::uint8_t>> aResFullA;
-        std::vector<std::vector<std::uint8_t>> aResFullB;
-
-        GatherDispatchMatrices(
-            aResMini,
-            aResQuadA,
-            aResQuadB,
-            aResQuadC,
-            aResQuadD,
-            aResFullA,
-            aResFullB
-        );
-
-        std::vector<std::vector<std::uint8_t>> aBigList;
-        aBigList.reserve(256 * 7);
-
-        AppendList(aBigList, aResMini);
-        AppendList(aBigList, aResQuadA);
-        AppendList(aBigList, aResQuadB);
-        AppendList(aBigList, aResQuadC);
-        AppendList(aBigList, aResQuadD);
-        AppendList(aBigList, aResFullA);
-        AppendList(aBigList, aResFullB);
-
-        int aLowest = 64;
-
-        for (int i = 0; i < static_cast<int>(aBigList.size()); i++) {
-            for (int j = i + 1; j < static_cast<int>(aBigList.size()); j++) {
-                int aDiff = DifferenceCount(aBigList[i], aBigList[j]);
-
-                if (aDiff < aLowest) {
-                    aLowest = aDiff;
+    for (std::uint64_t aLoop = 0; aLoop < pLoops; aLoop++) {
+        
+        std::array<std::uint8_t, 64> aBefore;
+        std::array<std::uint8_t, 64> aAfter;
+        
+        aMat.Reset();
+        
+        for (std::size_t i = 0; i < 64U; i++) {
+            aBefore[i] = aMat.mData[i];
+        }
+        
+        std::uint8_t qAA = NextRandomByte(pSeed);
+        std::uint8_t qAB = NextRandomByte(pSeed);
+        std::uint8_t qBA = NextRandomByte(pSeed);
+        std::uint8_t qBB = NextRandomByte(pSeed);
+        std::uint8_t qCA = NextRandomByte(pSeed);
+        std::uint8_t qCB = NextRandomByte(pSeed);
+        std::uint8_t qDA = NextRandomByte(pSeed);
+        std::uint8_t qDB = NextRandomByte(pSeed);
+        
+        std::uint8_t sA = NextRandomByte(pSeed);
+        std::uint8_t sB = NextRandomByte(pSeed);
+        std::uint8_t sC = NextRandomByte(pSeed);
+        std::uint8_t sD = NextRandomByte(pSeed);
+        std::uint8_t sE = NextRandomByte(pSeed);
+        std::uint8_t sF = NextRandomByte(pSeed);
+        std::uint8_t sG = NextRandomByte(pSeed);
+        std::uint8_t sH = NextRandomByte(pSeed);
+        
+        std::uint8_t amount = static_cast<std::uint8_t>((NextRandomByte(pSeed) % 15U) + 1U);
+        
+        aMat.DispatchPermute(qAA, qAB, qBA, qBB, qCA, qCB, qDA, qDB,
+                             sA, sB, sC, sD, sE, sF, sG, sH,
+                             amount);
+        
+        for (std::size_t i = 0; i < 64U; i++) {
+            aAfter[i] = aMat.mData[i];
+        }
+        
+        std::uint32_t aChangedCount = 0;
+        
+        for (std::size_t i = 0; i < 64U; i++) {
+            if (aBefore[i] != aAfter[i]) {
+                aChangedCount++;
+                aTileChangedHistogram[i]++;
+            }
+        }
+        
+        aChangedCountHistogram[aChangedCount]++;
+        
+        if (aChangedCount != 16U) {
+            aBadChangedCount++;
+            
+            if (aBadChangedCount <= 10U) {
+                std::printf("BAD changed count: loop=%llu changed=%u amount=%u\n",
+                            static_cast<unsigned long long>(aLoop),
+                            aChangedCount,
+                            static_cast<unsigned int>(amount));
+            }
+        }
+        
+        //
+        // Since Reset() makes value == original index,
+        // after DispatchPermute, each value tells us where it came from.
+        //
+        // For every changed destination i:
+        //
+        //   aAfter[i] = old source index
+        //
+        // So abs(i - aAfter[i]) gives a rough linear distance.
+        //
+        
+        for (std::size_t i = 0; i < 64U; i++) {
+            if (aBefore[i] != aAfter[i]) {
+                std::uint8_t aSourceIndex = aAfter[i];
+                
+                std::uint32_t aDistance;
+                
+                if (i >= static_cast<std::size_t>(aSourceIndex)) {
+                    aDistance = static_cast<std::uint32_t>(i - aSourceIndex);
+                } else {
+                    aDistance = static_cast<std::uint32_t>(aSourceIndex - i);
                 }
-
-                if (aDiff == 0) {
-                    printf("Duplicate Dispatch matrix output: big index %d == %d\n");
-                    exit(0);
+                
+                if (aDistance < 64U) {
+                    aValueMovedDistanceHistogram[aDistance]++;
                 }
             }
         }
+    }
+    
+    std::printf("loops: %llu\n", static_cast<unsigned long long>(pLoops));
+    std::printf("bad changed-count loops: %llu\n",
+                static_cast<unsigned long long>(aBadChangedCount));
+    
+    std::printf("\nchanged count histogram:\n");
+    for (int i = 0; i <= 64; i++) {
+        if (aChangedCountHistogram[i] > 0) {
+            std::printf("%2d changed: %llu\n",
+                        i,
+                        static_cast<unsigned long long>(aChangedCountHistogram[i]));
+        }
+    }
+    
+    std::printf("\ntile changed histogram:\n");
+    for (int y = 0; y < 8; y++) {
+        for (int x = 0; x < 8; x++) {
+            int i = y * 8 + x;
+            std::printf("%8llu ",
+                        static_cast<unsigned long long>(aTileChangedHistogram[i]));
+        }
+        std::printf("\n");
+    }
+    
+    std::printf("\nlinear moved-distance histogram:\n");
+    for (int i = 0; i < 64; i++) {
+        if (aValueMovedDistanceHistogram[i] > 0) {
+            std::printf("distance %2d: %llu\n",
+                        i,
+                        static_cast<unsigned long long>(aValueMovedDistanceHistogram[i]));
+        }
+    }
+}
 
-        printf("All Dispatchs lowest diff = %d\n", aLowest);
+
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
+    
+    TestDispatchPermuteRandomMix(0x12345678U, 100000ULL);
+    
+    // TestPermuteSwapDistribution2Bytes();
+
     
     
     //
@@ -711,330 +565,6 @@ static void AppendList(
     
     
     return;
-    
-    
-    std::vector<Pick4> picks;
-    picks.reserve(1820);
-    
-    // Unique unordered 4-tile sets from 16 tiles.
-    // a < b < c < d guarantees uniqueness.
-    for (int a = 0; a < 16; ++a) {
-        for (int b = a + 1; b < 16; ++b) {
-            for (int c = b + 1; c < 16; ++c) {
-                for (int d = c + 1; d < 16; ++d) {
-                    Pick4 p;
-                    p.t[0] = static_cast<std::uint8_t>(a);
-                    p.t[1] = static_cast<std::uint8_t>(b);
-                    p.t[2] = static_cast<std::uint8_t>(c);
-                    p.t[3] = static_cast<std::uint8_t>(d);
-                    picks.push_back(p);
-                }
-            }
-        }
-    }
-    
-    std::printf("// Generated by GenerateTwistMatrixQuadSelects.cpp\n");
-    std::printf("// Unique 4-tile picks inside a 4x4 Quad.\n");
-    std::printf("// Count: %zu\n\n", picks.size());
-    
-    std::printf("#ifndef TwistMatrixQuadSelects_hpp\n");
-    std::printf("#define TwistMatrixQuadSelects_hpp\n\n");
-    std::printf("#include <cstdint>\n\n");
-    
-    std::printf("class TwistMatrixQuadSelects {\n");
-    std::printf("public:\n");
-    std::printf("    static constexpr std::uint32_t kPick4Count = %zuU;\n\n", picks.size());
-    
-    std::printf("    static const std::uint8_t *Pick4(std::uint8_t pByteA, std::uint8_t pByteB) {\n");
-    std::printf("        const std::uint32_t aWord = static_cast<std::uint32_t>(pByteA) |\n");
-    std::printf("                                  (static_cast<std::uint32_t>(pByteB) << 8U);\n");
-    std::printf("        const std::uint32_t aIndex = aWord %% kPick4Count;\n");
-    std::printf("        return kPick4[aIndex];\n");
-    std::printf("    }\n\n");
-    
-    std::printf("private:\n");
-    std::printf("    static constexpr std::uint8_t kPick4[%zu][4] = {\n", picks.size());
-    
-    for (std::size_t i = 0; i < picks.size(); ++i) {
-        if (i < 32) {
-            PrintGridComment(picks[i], i);
-        }
-        
-        std::printf("        { %2uU, %2uU, %2uU, %2uU }",
-                    static_cast<unsigned>(picks[i].t[0]),
-                    static_cast<unsigned>(picks[i].t[1]),
-                    static_cast<unsigned>(picks[i].t[2]),
-                    static_cast<unsigned>(picks[i].t[3]));
-        
-        if (i + 1U != picks.size()) {
-            std::printf(",");
-        }
-        
-        std::printf("\n");
-    }
-    
-    std::printf("    };\n");
-    std::printf("};\n\n");
-    std::printf("#endif /* TwistMatrixQuadSelects_hpp */\n");
-    
-    
-    
-    
-    /*
-    {
-        M88 aMatrix;
-        aMatrix.Reset();
-        Slice aSlice = aMatrix.GetQuadA();
-        Quint aQuintCorners = aSlice.GetQuintRight(0, 0);
-        Quint aQuintCentersRight = aSlice.GetQuintRight(2, 1);
-        aSlice.PrepareSlots();
-        aSlice._Weave(aQuintCorners, aQuintCentersRight);
-        Quint aQuintEdgeA = aSlice.GetQuintRight(1, 0);
-        Quint aQuintEdgeB = aSlice.GetQuintRight(2, 0);
-        aQuintEdgeA.Print();
-        aSlice._RotB(aQuintEdgeA);
-        aSlice._RotB(aQuintEdgeB);
-        
-        //aSlice._Weave(aQuintEdgeA, aQuintEdgeB);
-        aSlice.RealizeSlots();
-        aMatrix.RecordStart();
-        aMatrix.Paste(aSlice);
-        aMatrix.RecordStop();
-        
-        aSlice.PrintRecipeFactory4x4("CastleA");
-        
-    }
-    {
-        M88 aMatrix;
-        aMatrix.Reset();
-        Slice aSlice = aMatrix.GetQuadA();
-        Quint aQuintCorners = aSlice.GetQuintRight(0, 0);
-        Quint aQuintCentersRight = aSlice.GetQuintRight(1, 2);
-        aSlice.PrepareSlots();
-        aSlice._Weave(aQuintCorners, aQuintCentersRight);
-        Quint aQuintEdgeA = aSlice.GetQuintRight(1, 0);
-        Quint aQuintEdgeB = aSlice.GetQuintRight(2, 0);
-        aQuintEdgeA.Print();
-        aSlice._RotA(aQuintEdgeA);
-        aSlice._RotA(aQuintEdgeB);
-        
-        //aSlice._Weave(aQuintEdgeA, aQuintEdgeB);
-        aSlice.RealizeSlots();
-        aMatrix.RecordStart();
-        aMatrix.Paste(aSlice);
-        aMatrix.RecordStop();
-        
-        aSlice.PrintRecipeFactory4x4("CastleB");
-        
-    }
-    
-    {
-        M88 aMatrix;
-        aMatrix.Reset();
-        Slice aSlice = aMatrix.GetQuadA();
-        Quint aQuintCorners = aSlice.GetQuintRight(0, 0);
-        Quint aQuintCentersRight = aSlice.GetQuintRight(2, 2);
-        aSlice.PrepareSlots();
-        aSlice._Weave(aQuintCorners, aQuintCentersRight);
-        Quint aQuintEdgeA = aSlice.GetQuintRight(1, 0);
-        Quint aQuintEdgeB = aSlice.GetQuintRight(2, 0);
-        aQuintEdgeA.Print();
-        aSlice._RotB(aQuintEdgeA);
-        aSlice._RotB(aQuintEdgeB);
-        
-        aSlice._Weave(aQuintEdgeA, aQuintEdgeB);
-        
-        aSlice.RealizeSlots();
-        aMatrix.RecordStart();
-        aMatrix.Paste(aSlice);
-        aMatrix.RecordStop();
-        
-        aSlice.PrintRecipeFactory4x4("CastleC");
-        
-    }
-    
-    {
-        M88 aMatrix;
-        aMatrix.Reset();
-        Slice aSlice = aMatrix.GetQuadA();
-        Quint aQuintCorners = aSlice.GetQuintRight(0, 0);
-        Quint aQuintCentersRight = aSlice.GetQuintRight(1, 1);
-        aSlice.PrepareSlots();
-        aSlice._Weave(aQuintCorners, aQuintCentersRight);
-        Quint aQuintEdgeA = aSlice.GetQuintRight(1, 0);
-        Quint aQuintEdgeB = aSlice.GetQuintRight(2, 0);
-        aQuintEdgeA.Print();
-        aSlice._RotA(aQuintEdgeA);
-        aSlice._RotA(aQuintEdgeB);
-        
-        aSlice._Weave(aQuintEdgeA, aQuintEdgeB);
-        aSlice.RealizeSlots();
-        aMatrix.RecordStart();
-        aMatrix.Paste(aSlice);
-        aMatrix.RecordStop();
-        
-        aSlice.PrintRecipeFactory4x4("CastleD");
-        
-    }
-    
-    {
-        M88 aMatrix;
-        aMatrix.Reset();
-        Slice aSlice = aMatrix.GetQuadA();
-        Quint aQuintCorners = aSlice.GetQuintRight(1, 0);
-        Quint aQuintCentersRight = aSlice.GetQuintRight(2, 1);
-        aSlice.PrepareSlots();
-        aSlice._Weave(aQuintCorners, aQuintCentersRight);
-        Quint aQuintEdgeA = aSlice.GetQuintRight(0, 0);
-        Quint aQuintEdgeB = aSlice.GetQuintRight(2, 0);
-        aQuintEdgeA.Print();
-        
-        aSlice._RotA(aQuintEdgeA);
-        aSlice._RotB(aQuintEdgeB);
-        
-        aSlice._Weave(aQuintEdgeA, aQuintEdgeB);
-        aSlice.RealizeSlots();
-        aMatrix.RecordStart();
-        aMatrix.Paste(aSlice);
-        aMatrix.RecordStop();
-        
-        aSlice.PrintRecipeFactory4x4("TowerA");
-        
-    }
-    
-    {
-        M88 aMatrix;
-        aMatrix.Reset();
-        Slice aSlice = aMatrix.GetQuadA();
-        Quint aQuintCorners = aSlice.GetQuintRight(1, 0);
-        Quint aQuintCentersRight = aSlice.GetQuintRight(1, 2);
-        aSlice.PrepareSlots();
-        aSlice._Weave(aQuintCorners, aQuintCentersRight);
-        Quint aQuintEdgeA = aSlice.GetQuintRight(0, 0);
-        Quint aQuintEdgeB = aSlice.GetQuintRight(2, 0);
-        aQuintEdgeA.Print();
-        
-        aSlice._RotB(aQuintEdgeA);
-        aSlice._RotA(aQuintEdgeB);
-        
-        aSlice._Weave(aQuintEdgeA, aQuintEdgeB);
-        aSlice.RealizeSlots();
-        aMatrix.RecordStart();
-        aMatrix.Paste(aSlice);
-        aMatrix.RecordStop();
-        
-        aSlice.PrintRecipeFactory4x4("TowerB");
-        
-    }
-    
-    
-    {
-        M88 aMatrix;
-        aMatrix.Reset();
-        Slice aSlice = aMatrix.GetQuadA();
-        Quint aQuintCorners = aSlice.GetQuintRight(1, 0);
-        Quint aQuintCentersRight = aSlice.GetQuintRight(2, 2);
-        aSlice.PrepareSlots();
-        aSlice._Weave(aQuintCorners, aQuintCentersRight);
-        Quint aQuintEdgeA = aSlice.GetQuintRight(0, 0);
-        Quint aQuintEdgeB = aSlice.GetQuintRight(2, 0);
-        aQuintEdgeA.Print();
-        
-        aSlice._RotA(aQuintEdgeA);
-        aSlice._RotB(aQuintEdgeB);
-        
-        //aSlice._Weave(aQuintEdgeA, aQuintEdgeB);
-        aSlice.RealizeSlots();
-        aMatrix.RecordStart();
-        aMatrix.Paste(aSlice);
-        aMatrix.RecordStop();
-        
-        aSlice.PrintRecipeFactory4x4("TowerC");
-        
-    }
-    
-    {
-        M88 aMatrix;
-        aMatrix.Reset();
-        Slice aSlice = aMatrix.GetQuadA();
-        Quint aQuintCorners = aSlice.GetQuintRight(1, 0);
-        Quint aQuintCentersRight = aSlice.GetQuintRight(1, 1);
-        aSlice.PrepareSlots();
-        aSlice._Weave(aQuintCorners, aQuintCentersRight);
-        Quint aQuintEdgeA = aSlice.GetQuintRight(0, 0);
-        Quint aQuintEdgeB = aSlice.GetQuintRight(2, 0);
-        aQuintEdgeA.Print();
-        
-        aSlice._RotB(aQuintEdgeA);
-        aSlice._RotA(aQuintEdgeB);
-        
-        //aSlice._Weave(aQuintEdgeA, aQuintEdgeB);
-        aSlice.RealizeSlots();
-        aMatrix.RecordStart();
-        aMatrix.Paste(aSlice);
-        aMatrix.RecordStop();
-        
-        aSlice.PrintRecipeFactory4x4("TowerD");
-        
-    }
-    
-    
-    {
-        M88 aMatrix;
-        aMatrix.Reset();
-        Slice aSlice = aMatrix.GetQuadA();
-        Quint aQuintCorners = aSlice.GetQuintRight(2, 0);
-        Quint aQuintCentersRight = aSlice.GetQuintRight(2, 2);
-        aSlice.PrepareSlots();
-        aSlice._Weave(aQuintCorners, aQuintCentersRight);
-        
-        
-        Quint aQuintEdgeA = aSlice.GetQuintRight(0, 0);
-        Quint aQuintEdgeB = aSlice.GetQuintRight(1, 0);
-        aQuintEdgeA.Print();
-        
-        aSlice._RotC(aQuintEdgeA);
-        aSlice._RotC(aQuintEdgeB);
-        
-        aSlice._Weave(aQuintEdgeA, aQuintEdgeB);
-        aSlice.RealizeSlots();
-        aMatrix.RecordStart();
-        aMatrix.Paste(aSlice);
-        aMatrix.RecordStop();
-        
-        aSlice.PrintRecipeFactory4x4("FortressA");
-        
-    }
-    
-    {
-        M88 aMatrix;
-        aMatrix.Reset();
-        Slice aSlice = aMatrix.GetQuadA();
-        Quint aQuintCorners = aSlice.GetQuintRight(2, 0);
-        Quint aQuintCentersRight = aSlice.GetQuintRight(1, 1);
-        aSlice.PrepareSlots();
-        aSlice._Weave(aQuintCorners, aQuintCentersRight);
-        
-        
-        Quint aQuintEdgeA = aSlice.GetQuintRight(0, 0);
-        Quint aQuintEdgeB = aSlice.GetQuintRight(1, 0);
-        aQuintEdgeA.Print();
-        
-        aSlice._RotC(aQuintEdgeA);
-        aSlice._RotC(aQuintEdgeB);
-        
-        //aSlice._Weave(aQuintEdgeA, aQuintEdgeB);
-        
-        aSlice.RealizeSlots();
-        aMatrix.RecordStart();
-        aMatrix.Paste(aSlice);
-        aMatrix.RecordStop();
-        
-        aSlice.PrintRecipeFactory4x4("FortressB");
-        
-    }
-     
-    */
     
 }
 

@@ -22,92 +22,120 @@ void M88::Reset() {
     }
 }
 
-std::size_t M88::Slot(std::size_t pX, std::size_t pY) {
-    return pY * 8U + pX;
-}
-
-std::size_t M88::X(std::size_t pSlot) {
-    return pSlot % 8U;
-}
-
-std::size_t M88::Y(std::size_t pSlot) {
-    return pSlot / 8U;
+void M88::Print() const {
+    
+    for (std::size_t y = 0; y < 8U; y++) {
+        for (std::size_t x = 0; x < 8U; x++) {
+            const std::size_t aIndex = y * 8U + x;
+            std::printf("%3u ", static_cast<unsigned int>(mData[aIndex]));
+        }
+        
+        std::printf("\n");
+    }
+    
+    std::printf("\n");
 }
 
 void M88::Dispatch(std::uint8_t *pOperationData,
-                    std::uint8_t *pSource,
-                    std::uint8_t *pDestination) {
+                   std::size_t pOperationIndex,
+                   std::uint8_t *pSource,
+                   std::size_t pSourceIndex,
+                   std::uint8_t *pDestination,
+                   std::size_t pDestinationIndex) {
     
-    memcpy(mData, pSource, 64U);
+    std::uint8_t *aOperationData = pOperationData + pOperationIndex;
+    std::uint8_t *aSource = pSource + pSourceIndex;
+    std::uint8_t *aDestination = pDestination + pDestinationIndex;
     
-    DispatchPermute(pOperationData[8],
-                     pOperationData[9],
-                     pOperationData[10],
-                     pOperationData[11],
-                     pOperationData[12],
-                     pOperationData[13],
-                     pOperationData[14],
-                     pOperationData[15],
-                     
-                     pOperationData[16],
-                     pOperationData[17],
-                     pOperationData[18],
-                     pOperationData[19],
-                     pOperationData[20],
-                     pOperationData[21],
-                     pOperationData[22],
-                     pOperationData[23],
-                     
-                     pOperationData[24]);
+    memcpy(mData, aSource, 64U);
     
-    DispatchFullA(pOperationData[25]);
+    DispatchPermute(aOperationData[4],
+                    aOperationData[5],
+                    aOperationData[6],
+                    aOperationData[7],
+                    aOperationData[8],
+                    aOperationData[9],
+                    aOperationData[10],
+                    aOperationData[11],
+                    
+                    aOperationData[12],
+                    aOperationData[13],
+                    aOperationData[14],
+                    aOperationData[15],
+                    aOperationData[16],
+                    aOperationData[17],
+                    aOperationData[18],
+                    aOperationData[19],
+                    
+                    aOperationData[20]);
     
-    DispatchQuadA(pOperationData[26]);
-    DispatchQuadB(pOperationData[27]);
-    DispatchQuadC(pOperationData[28]);
-    DispatchQuadD(pOperationData[29]);
+    DispatchFullA(aOperationData[21]);
     
-    DispatchMini(pOperationData[30]);
+    DispatchSwapsA(aOperationData[22],
+                   aOperationData[23]);
     
-    DispatchPermute(pOperationData[31],
-                     pOperationData[32],
-                     pOperationData[33],
-                     pOperationData[34],
-                     pOperationData[35],
-                     pOperationData[36],
-                     pOperationData[37],
-                     pOperationData[38],
-                     
-                     pOperationData[39],
-                     pOperationData[40],
-                     pOperationData[41],
-                     pOperationData[42],
-                     pOperationData[43],
-                     pOperationData[44],
-                     pOperationData[45],
-                     pOperationData[46],
-                     
-                     pOperationData[47]);
+    DispatchQuadA(aOperationData[24]);
+    DispatchQuadB(aOperationData[25]);
+    DispatchQuadC(aOperationData[26]);
+    DispatchQuadD(aOperationData[27]);
     
-    DispatchMini(pOperationData[48]);
+    DispatchSwapsB(aOperationData[28]);
     
-    DispatchQuadD(pOperationData[49]);
-    DispatchQuadC(pOperationData[50]);
-    DispatchQuadB(pOperationData[51]);
-    DispatchQuadA(pOperationData[52]);
+    DispatchMini(aOperationData[29]);
     
-    DispatchFullB(pOperationData[53]);
+    DispatchPermute(aOperationData[30],
+                    aOperationData[31],
+                    aOperationData[32],
+                    aOperationData[33],
+                    aOperationData[34],
+                    aOperationData[35],
+                    aOperationData[36],
+                    aOperationData[37],
+                    
+                    aOperationData[38],
+                    aOperationData[39],
+                    aOperationData[40],
+                    aOperationData[41],
+                    aOperationData[42],
+                    aOperationData[43],
+                    aOperationData[44],
+                    aOperationData[45],
+                    
+                    aOperationData[46]);
     
-    DispatchUnroll(pDestination,
-                    pOperationData[54],
-                    pOperationData[55],
-                    pOperationData[56],
-                    pOperationData[57],
-                    pOperationData[58],
-                    pOperationData[59],
-                    pOperationData[60],
-                    pOperationData[61]);
+    DispatchMini(aOperationData[47]);
     
+    DispatchSwapsB(aOperationData[48]);
+    
+    DispatchQuadD(aOperationData[49]);
+    DispatchQuadC(aOperationData[50]);
+    DispatchQuadB(aOperationData[51]);
+    DispatchQuadA(aOperationData[52]);
+    
+    DispatchSwapsA(aOperationData[53],
+                   aOperationData[54]);
+    
+    DispatchFullB(aOperationData[55]);
+    
+    DispatchUnroll(aDestination,
+                   aOperationData[56],
+                   aOperationData[57],
+                   aOperationData[58],
+                   aOperationData[59],
+                   aOperationData[60],
+                   aOperationData[61],
+                   aOperationData[62],
+                   aOperationData[63]);
+}
+
+void M88::DispatchSwapsA(std::uint8_t pByteA, std::uint8_t pByteB) {
+    SwapRows(pByteA, pByteA >> 4);
+    SwapColumns(pByteB, pByteB >> 4);
+    
+}
+
+void M88::DispatchSwapsB(std::uint8_t pByte) {
+    SwapMinis(pByte, pByte >> 4);
 }
 
 void M88::DispatchUnroll(std::uint8_t *pDestination,
@@ -1001,160 +1029,7 @@ void M88::DispatchPermute(std::uint8_t pByteSelect_QuadA_A,
                            std::uint8_t pByteSwapsG,
                            std::uint8_t pByteSwapsH,
                            
-                           std::uint8_t pByteAmount) {
-    
-    //
-    // 1. Pick 4 slots from each 4x4 quad.
-    //
-    // Each M88QuadSelectsX::Pick4(...) returns a pointer to 4 slot indexes.
-    // These are real M88 slot indexes, not local 0..15 indexes.
-    //
-    
-    const std::uint8_t *aPickA = M88QuadSelectsA::Pick4(pByteSelect_QuadA_A,
-                                                        pByteSelect_QuadA_B);
-    
-    const std::uint8_t *aPickB = M88QuadSelectsB::Pick4(pByteSelect_QuadB_A,
-                                                        pByteSelect_QuadB_B);
-    
-    const std::uint8_t *aPickC = M88QuadSelectsC::Pick4(pByteSelect_QuadC_A,
-                                                        pByteSelect_QuadC_B);
-    
-    const std::uint8_t *aPickD = M88QuadSelectsD::Pick4(pByteSelect_QuadD_A,
-                                                        pByteSelect_QuadD_B);
-    
-    
-    //
-    // 2. Build the initial 16-slot picked list.
-    //
-    // mPermute[] is the ring path.
-    //
-    // At this point the ring path is:
-    //
-    //   [4 from QuadA]
-    //   [4 from QuadB]
-    //   [4 from QuadC]
-    //   [4 from QuadD]
-    //
-    
-    mPermute[0]  = aPickA[0];
-    mPermute[1]  = aPickA[1];
-    mPermute[2]  = aPickA[2];
-    mPermute[3]  = aPickA[3];
-    
-    mPermute[4]  = aPickB[0];
-    mPermute[5]  = aPickB[1];
-    mPermute[6]  = aPickB[2];
-    mPermute[7]  = aPickB[3];
-    
-    mPermute[8]  = aPickC[0];
-    mPermute[9]  = aPickC[1];
-    mPermute[10] = aPickC[2];
-    mPermute[11] = aPickC[3];
-    
-    mPermute[12] = aPickD[0];
-    mPermute[13] = aPickD[1];
-    mPermute[14] = aPickD[2];
-    mPermute[15] = aPickD[3];
-    
-    
-    //
-    // 3. Shuffle the ring path using 6 byte-controlled swaps.
-    //
-    // Each swap byte is split into two 4-bit indexes:
-    //
-    //   upper nibble = first index  in mPermute[0..15]
-    //   lower nibble = second index in mPermute[0..15]
-    //
-    // This does not move data yet.
-    // It only changes the order of the ring path.
-    //
-    
-    std::uint8_t aIndexA = 0;
-    std::uint8_t aIndexB = 0;
-    std::uint8_t aHold = 0;
-
-    {
-        aIndexA = (pByteSwapsA >> 4U) & 0x0FU;
-        aIndexB = (pByteSwapsA >> 0U) & 0x0FU;
-        
-        aHold = mPermute[aIndexA];
-        mPermute[aIndexA] = mPermute[aIndexB];
-        mPermute[aIndexB] = aHold;
-    }
-
-    {
-        aIndexA = (pByteSwapsB >> 4U) & 0x0FU;
-        aIndexB = (pByteSwapsB >> 0U) & 0x0FU;
-        
-        aHold = mPermute[aIndexA];
-        mPermute[aIndexA] = mPermute[aIndexB];
-        mPermute[aIndexB] = aHold;
-    }
-
-    {
-        aIndexA = (pByteSwapsC >> 4U) & 0x0FU;
-        aIndexB = (pByteSwapsC >> 0U) & 0x0FU;
-        
-        aHold = mPermute[aIndexA];
-        mPermute[aIndexA] = mPermute[aIndexB];
-        mPermute[aIndexB] = aHold;
-    }
-
-    {
-        aIndexA = (pByteSwapsD >> 4U) & 0x0FU;
-        aIndexB = (pByteSwapsD >> 0U) & 0x0FU;
-        
-        aHold = mPermute[aIndexA];
-        mPermute[aIndexA] = mPermute[aIndexB];
-        mPermute[aIndexB] = aHold;
-    }
-
-    {
-        aIndexA = (pByteSwapsE >> 4U) & 0x0FU;
-        aIndexB = (pByteSwapsE >> 0U) & 0x0FU;
-        
-        aHold = mPermute[aIndexA];
-        mPermute[aIndexA] = mPermute[aIndexB];
-        mPermute[aIndexB] = aHold;
-    }
-
-    {
-        aIndexA = (pByteSwapsF >> 4U) & 0x0FU;
-        aIndexB = (pByteSwapsF >> 0U) & 0x0FU;
-        
-        aHold = mPermute[aIndexA];
-        mPermute[aIndexA] = mPermute[aIndexB];
-        mPermute[aIndexB] = aHold;
-    }
-
-    {
-        aIndexA = (pByteSwapsG >> 4U) & 0x0FU;
-        aIndexB = (pByteSwapsG >> 0U) & 0x0FU;
-        
-        aHold = mPermute[aIndexA];
-        mPermute[aIndexA] = mPermute[aIndexB];
-        mPermute[aIndexB] = aHold;
-    }
-
-    {
-        aIndexA = (pByteSwapsH >> 4U) & 0x0FU;
-        aIndexB = (pByteSwapsH >> 0U) & 0x0FU;
-        
-        aHold = mPermute[aIndexA];
-        mPermute[aIndexA] = mPermute[aIndexB];
-        mPermute[aIndexB] = aHold;
-    }
-    
-    
-    //
-    // 4. Convert pByteAmount into a ring shift amount.
-    //
-    // Low nibble gives a clean uniform value from 0..15.
-    //
-    // amount = 0 means no data moves.
-    // Since this whole function is just "pick, shuffle path, ring-shift data",
-    // amount 0 is a true no-op and we can return.
-    //
+                          std::uint8_t pByteAmount) {
     
     std::uint8_t aAmount = pByteAmount & 0x0FU;
     
@@ -1162,105 +1037,225 @@ void M88::DispatchPermute(std::uint8_t pByteSelect_QuadA_A,
         return;
     }
     
+    const std::uint8_t *aPickA = M88QuadSelectsA::Pick4(pByteSelect_QuadA_A, pByteSelect_QuadA_B);
+    const std::uint8_t *aPickB = M88QuadSelectsB::Pick4(pByteSelect_QuadB_A, pByteSelect_QuadB_B);
+    const std::uint8_t *aPickC = M88QuadSelectsC::Pick4(pByteSelect_QuadC_A, pByteSelect_QuadC_B);
+    const std::uint8_t *aPickD = M88QuadSelectsD::Pick4(pByteSelect_QuadD_A, pByteSelect_QuadD_B);
     
-    //
-    // 5. Build the shifted source list.
-    //
-    // mPermute[] is the destination ring path.
-    // mPermuteTemp[] is the source ring path.
-    //
-    // For amount = 1:
-    //
-    //   destination mPermute[0] reads from source mPermute[15]
-    //   destination mPermute[1] reads from source mPermute[0]
-    //   destination mPermute[2] reads from source mPermute[1]
-    //   ...
-    //
-    // This matches:
-    //
-    //   data[path[0]] = old_data[path[15]]
-    //   data[path[1]] = old_data[path[0]]
-    //   data[path[2]] = old_data[path[1]]
-    //
+    mPermute[0]  = aPickA[0]; mPermute[1]  = aPickA[1]; mPermute[2]  = aPickA[2]; mPermute[3]  = aPickA[3];
+    mPermute[4]  = aPickB[0]; mPermute[5]  = aPickB[1]; mPermute[6]  = aPickB[2]; mPermute[7]  = aPickB[3];
+    mPermute[8]  = aPickC[0]; mPermute[9]  = aPickC[1]; mPermute[10] = aPickC[2]; mPermute[11] = aPickC[3];
+    mPermute[12] = aPickD[0]; mPermute[13] = aPickD[1]; mPermute[14] = aPickD[2]; mPermute[15] = aPickD[3];
+    
+    std::uint8_t aIndexA = 0; std::uint8_t aIndexB = 0; std::uint8_t aHold = 0;
+    
+    aIndexA = (pByteSwapsA >> 4U) & 0x0FU;
+    aIndexB = (pByteSwapsA >> 0U) & 0x0FU;
+    aHold = mPermute[aIndexA];
+    mPermute[aIndexA] = mPermute[aIndexB];
+    mPermute[aIndexB] = aHold;
+    
+    aIndexA = (pByteSwapsB >> 4U) & 0x0FU;
+    aIndexB = (pByteSwapsB >> 0U) & 0x0FU;
+    aHold = mPermute[aIndexA];
+    mPermute[aIndexA] = mPermute[aIndexB];
+    mPermute[aIndexB] = aHold;
+    
+    aIndexA = (pByteSwapsC >> 4U) & 0x0FU;
+    aIndexB = (pByteSwapsC >> 0U) & 0x0FU;
+    aHold = mPermute[aIndexA];
+    mPermute[aIndexA] = mPermute[aIndexB];
+    mPermute[aIndexB] = aHold;
+    
+    aIndexA = (pByteSwapsD >> 4U) & 0x0FU;
+    aIndexB = (pByteSwapsD >> 0U) & 0x0FU;
+    aHold = mPermute[aIndexA];
+    mPermute[aIndexA] = mPermute[aIndexB];
+    mPermute[aIndexB] = aHold;
+    
+    aIndexA = (pByteSwapsE >> 4U) & 0x0FU;
+    aIndexB = (pByteSwapsE >> 0U) & 0x0FU;
+    aHold = mPermute[aIndexA];
+    mPermute[aIndexA] = mPermute[aIndexB];
+    mPermute[aIndexB] = aHold;
+    
+    aIndexA = (pByteSwapsF >> 4U) & 0x0FU;
+    aIndexB = (pByteSwapsF >> 0U) & 0x0FU;
+    aHold = mPermute[aIndexA];
+    mPermute[aIndexA] = mPermute[aIndexB];
+    mPermute[aIndexB] = aHold;
+    
+    aIndexA = (pByteSwapsG >> 4U) & 0x0FU;
+    aIndexB = (pByteSwapsG >> 0U) & 0x0FU;
+    aHold = mPermute[aIndexA];
+    mPermute[aIndexA] = mPermute[aIndexB];
+    mPermute[aIndexB] = aHold;
+    
+    aIndexA = (pByteSwapsH >> 4U) & 0x0FU;
+    aIndexB = (pByteSwapsH >> 0U) & 0x0FU;
+    aHold = mPermute[aIndexA];
+    mPermute[aIndexA] = mPermute[aIndexB];
+    mPermute[aIndexB] = aHold;
+    
+    
+    
     
     mPermuteTemp[0]  = mPermute[(0  + 16 - aAmount) & 0x0F];
     mPermuteTemp[1]  = mPermute[(1  + 16 - aAmount) & 0x0F];
     mPermuteTemp[2]  = mPermute[(2  + 16 - aAmount) & 0x0F];
     mPermuteTemp[3]  = mPermute[(3  + 16 - aAmount) & 0x0F];
-    
     mPermuteTemp[4]  = mPermute[(4  + 16 - aAmount) & 0x0F];
     mPermuteTemp[5]  = mPermute[(5  + 16 - aAmount) & 0x0F];
     mPermuteTemp[6]  = mPermute[(6  + 16 - aAmount) & 0x0F];
     mPermuteTemp[7]  = mPermute[(7  + 16 - aAmount) & 0x0F];
-    
     mPermuteTemp[8]  = mPermute[(8  + 16 - aAmount) & 0x0F];
     mPermuteTemp[9]  = mPermute[(9  + 16 - aAmount) & 0x0F];
     mPermuteTemp[10] = mPermute[(10 + 16 - aAmount) & 0x0F];
     mPermuteTemp[11] = mPermute[(11 + 16 - aAmount) & 0x0F];
-    
     mPermuteTemp[12] = mPermute[(12 + 16 - aAmount) & 0x0F];
     mPermuteTemp[13] = mPermute[(13 + 16 - aAmount) & 0x0F];
     mPermuteTemp[14] = mPermute[(14 + 16 - aAmount) & 0x0F];
     mPermuteTemp[15] = mPermute[(15 + 16 - aAmount) & 0x0F];
     
-    
-    //
-    // 6. Snapshot the 16 source data values.
-    //
-    // This is required because we are moving values inside mData.
-    // Without this temp copy, an early write could overwrite a value that
-    // a later read still needs.
-    //
-    
     mPermuteData[0]  = mData[mPermuteTemp[0]];
     mPermuteData[1]  = mData[mPermuteTemp[1]];
     mPermuteData[2]  = mData[mPermuteTemp[2]];
     mPermuteData[3]  = mData[mPermuteTemp[3]];
-    
     mPermuteData[4]  = mData[mPermuteTemp[4]];
     mPermuteData[5]  = mData[mPermuteTemp[5]];
     mPermuteData[6]  = mData[mPermuteTemp[6]];
     mPermuteData[7]  = mData[mPermuteTemp[7]];
-    
     mPermuteData[8]  = mData[mPermuteTemp[8]];
     mPermuteData[9]  = mData[mPermuteTemp[9]];
     mPermuteData[10] = mData[mPermuteTemp[10]];
     mPermuteData[11] = mData[mPermuteTemp[11]];
-    
     mPermuteData[12] = mData[mPermuteTemp[12]];
     mPermuteData[13] = mData[mPermuteTemp[13]];
     mPermuteData[14] = mData[mPermuteTemp[14]];
     mPermuteData[15] = mData[mPermuteTemp[15]];
     
-    
-    //
-    // 7. Write the saved source values into the destination ring path.
-    //
-    // Destination path is mPermute[].
-    // Source values are already captured in mPermuteData[].
-    //
-    
     mData[mPermute[0]]  = mPermuteData[0];
     mData[mPermute[1]]  = mPermuteData[1];
     mData[mPermute[2]]  = mPermuteData[2];
     mData[mPermute[3]]  = mPermuteData[3];
-    
     mData[mPermute[4]]  = mPermuteData[4];
     mData[mPermute[5]]  = mPermuteData[5];
     mData[mPermute[6]]  = mPermuteData[6];
     mData[mPermute[7]]  = mPermuteData[7];
-    
     mData[mPermute[8]]  = mPermuteData[8];
     mData[mPermute[9]]  = mPermuteData[9];
     mData[mPermute[10]] = mPermuteData[10];
     mData[mPermute[11]] = mPermuteData[11];
-    
     mData[mPermute[12]] = mPermuteData[12];
     mData[mPermute[13]] = mPermuteData[13];
     mData[mPermute[14]] = mPermuteData[14];
     mData[mPermute[15]] = mPermuteData[15];
 }
 
+void M88::SwapRows(std::uint8_t pRowA, std::uint8_t pRowB) {
+
+    std::uint8_t aRowA = (pRowA & 7U) << 3U;
+    std::uint8_t aRowB = (pRowB & 7U) << 3U;
+
+    if (aRowA == aRowB) { return; }
+
+    std::uint8_t aHold = 0;
+
+    aHold = mData[aRowA + 0U];
+    mData[aRowA + 0U] = mData[aRowB + 0U];
+    mData[aRowB + 0U] = aHold;
+
+    aHold = mData[aRowA + 1U];
+    mData[aRowA + 1U] = mData[aRowB + 1U];
+    mData[aRowB + 1U] = aHold;
+
+    aHold = mData[aRowA + 2U];
+    mData[aRowA + 2U] = mData[aRowB + 2U];
+    mData[aRowB + 2U] = aHold;
+
+    aHold = mData[aRowA + 3U];
+    mData[aRowA + 3U] = mData[aRowB + 3U];
+    mData[aRowB + 3U] = aHold;
+
+    aHold = mData[aRowA + 4U];
+    mData[aRowA + 4U] = mData[aRowB + 4U];
+    mData[aRowB + 4U] = aHold;
+
+    aHold = mData[aRowA + 5U];
+    mData[aRowA + 5U] = mData[aRowB + 5U];
+    mData[aRowB + 5U] = aHold;
+
+    aHold = mData[aRowA + 6U];
+    mData[aRowA + 6U] = mData[aRowB + 6U];
+    mData[aRowB + 6U] = aHold;
+
+    aHold = mData[aRowA + 7U];
+    mData[aRowA + 7U] = mData[aRowB + 7U];
+    mData[aRowB + 7U] = aHold;
+}
+
+void M88::SwapColumns(std::uint8_t pColA, std::uint8_t pColB) {
+
+    std::uint8_t aColA = pColA & 7;
+    std::uint8_t aColB = pColB & 7;
+
+    if (aColA == aColB) { return; }
+
+    std::uint8_t aHold;
+
+    for (std::uint8_t aRowIndex = 0; aRowIndex < 8; ++aRowIndex) {
+
+        std::uint8_t aBase = aRowIndex << 3;
+
+        aHold = mData[aBase + aColA];
+        mData[aBase + aColA] = mData[aBase + aColB];
+        mData[aBase + aColB] = aHold;
+    }
+}
+
+void M88::SwapMinis(std::uint8_t pBlockA, std::uint8_t pBlockB) {
+
+    std::uint8_t aBlockA = pBlockA & 15;
+    std::uint8_t aBlockB = pBlockB & 15;
+
+    if (aBlockA == aBlockB) { return; }
+
+    // decode A
+    std::uint8_t aRowA = (aBlockA >> 2) << 1;
+    std::uint8_t aColA = (aBlockA & 3) << 1;
+
+    // decode B
+    std::uint8_t aRowB = (aBlockB >> 2) << 1;
+    std::uint8_t aColB = (aBlockB & 3) << 1;
+
+    std::uint8_t aBaseaByte0 = (aRowA + 0) << 3;
+    std::uint8_t aBaseaByte1 = (aRowA + 1) << 3;
+
+    std::uint8_t aBaseB0 = (aRowB + 0) << 3;
+    std::uint8_t aBaseB1 = (aRowB + 1) << 3;
+
+    std::uint8_t aHold;
+
+    // (0,0)
+    aHold = mData[aBaseaByte0 + aColA + 0];
+    mData[aBaseaByte0 + aColA + 0] = mData[aBaseB0 + aColB + 0];
+    mData[aBaseB0 + aColB + 0] = aHold;
+
+    // (0,1)
+    aHold = mData[aBaseaByte0 + aColA + 1];
+    mData[aBaseaByte0 + aColA + 1] = mData[aBaseB0 + aColB + 1];
+    mData[aBaseB0 + aColB + 1] = aHold;
+
+    // (1,0)
+    aHold = mData[aBaseaByte1 + aColA + 0];
+    mData[aBaseaByte1 + aColA + 0] = mData[aBaseB1 + aColB + 0];
+    mData[aBaseB1 + aColB + 0] = aHold;
+
+    // (1,1)
+    aHold = mData[aBaseaByte1 + aColA + 1];
+    mData[aBaseaByte1 + aColA + 1] = mData[aBaseB1 + aColB + 1];
+    mData[aBaseB1 + aColB + 1] = aHold;
+}
 
 void M88::Full_RotA_EachQuad_2x2() {
     Quad_RotA_2x2_A();
