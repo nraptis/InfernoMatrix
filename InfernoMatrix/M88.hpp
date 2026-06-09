@@ -30,7 +30,12 @@ public:
                                                          std::uint8_t *pSource,
                                                          std::size_t pSourceIndex,
                                                          std::uint8_t *pDestination,
-                                                         std::size_t pDestinationIndex);
+                                                         std::size_t pDestinationIndex,
+                                                         std::uint8_t pUnrollDomainWord,
+                                                         std::uint8_t pArgADomainWord,
+                                                         std::uint8_t pArgBDomainWord,
+                                                         std::uint8_t pArgCDomainWord,
+                                                         std::uint8_t pArgDDomainWord);
     
     void                                        DispatchUnroll(std::uint8_t *pDestination,
                                                                 std::uint8_t pByteSwapsA,
